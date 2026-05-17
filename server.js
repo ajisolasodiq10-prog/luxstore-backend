@@ -14,8 +14,8 @@ connectDB();
 app.use(
   cors({
     origin:[
-       "",
-             "",
+       "http://localhost:5000/api",
+             "https://luxstore-three.vercel.app/",
              
             ],
       credentials: true,
