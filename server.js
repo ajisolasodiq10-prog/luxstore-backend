@@ -12,7 +12,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(express.json());
+
 
 app.use(
   cors({
@@ -25,7 +25,7 @@ app.use(
   }),
 );
 
-
+app.use(express.json());
 
 // app.use(express.json()); // parse application/json bodies
 // app.use(express.urlencoded({ extended: true })); 
