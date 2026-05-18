@@ -11,6 +11,9 @@ const orderRoutes = require ("./routes/orderRoutes")
 dotenv.config();
 connectDB();
 
+const app = express();
+app.use(express.json());
+
 app.use(
   cors({
     origin:[
@@ -22,8 +25,7 @@ app.use(
   }),
 );
 
-const app = express();
-app.use(express.json());
+
 
 // app.use(express.json()); // parse application/json bodies
 // app.use(express.urlencoded({ extended: true })); 
