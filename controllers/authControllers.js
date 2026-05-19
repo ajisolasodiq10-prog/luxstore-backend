@@ -134,9 +134,17 @@ function makeToken(existingUser) {
 // };// GET /api/auth/me
 const getMe = async (req, res) => {
   try {
-    return res.status(200).json({ user: req.user });
+    const me = await User.findById(req.user._id).select("password");
+    if(!user) return res.status(404).json({error: "user not found"})
+    return res.status(200).json({ 
+  user:{  id:    me._id,
+        name:  me.name,
+        email: me.email,
+        role:  me.role,
+        createdAt: me.createdAt,
+  }
+});
   } catch (error) {
-    console.error("getMe error:", error.message);
     return res.status(500).json({ error: "Could not get user." });
   }
 };

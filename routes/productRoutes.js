@@ -6,7 +6,7 @@ const { authorizeRoles } = require("../middleware/role");
 const router = express.Router();
 
 router.post("/",  protect, authorizeRoles("admin", "superadmin"), createProduct);
-router.get("/", protect, getAllProducts);
+router.get("/",  getAllProducts);
 router.get("/search", protect, getProduct);
 router.put("/:id", protect, authorizeRoles("admin", "superadmin"), updateProduct);
 router.delete("/:id",  protect,  authorizeRoles("admin", "superadmin"), deleteProduct);

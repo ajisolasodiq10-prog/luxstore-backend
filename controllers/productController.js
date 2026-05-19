@@ -128,7 +128,7 @@ const getProduct = async (req, res) => {
   }
 };
 
-
+// GET /api/products/catego
 
 
 
