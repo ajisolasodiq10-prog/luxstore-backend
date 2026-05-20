@@ -1,5 +1,5 @@
 const Order = require("../models/order");
-const Cart = require("../models/cart");
+const { Cart } = require("../models/cart");
 const Product = require("../models/product");
 
 // POST /api/orders/checkout

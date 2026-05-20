@@ -1,5 +1,5 @@
-const CartItem = require("../models/product");
-const Cart = require("../models/product");
+const Product = require("../models/product");
+const { Cart } = require("../models/cart");
 
 // GET /api/cart
 const getCart = async (req, res) => {

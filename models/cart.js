@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
-const user = require("./user");
 
 // Step 1 — Define the shape (called a "schema")
-
-
-
 const cartItemSchema = new mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
@@ -15,8 +11,8 @@ const cartItemSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     required: true,
-    min:1,
-    default:1
+    min: 1,
+    default: 1,
   },
 
   priceAtAdd: {
@@ -31,12 +27,11 @@ const cartSchema = new mongoose.Schema({
     required: true,
   },
 
-  quantity: {
+  items: {
     type: [cartItemSchema],
     required: true,
-    default:[]
+    default: [],
   },
-
 });
 
 const CartItem = mongoose.model("CartItem", cartItemSchema);

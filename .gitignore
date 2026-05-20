@@ -2,3 +2,5 @@ node_modules/
 .env
 *.log
 logs/
+tmp_route_test.js
+tmp_raw_tcp_test.py

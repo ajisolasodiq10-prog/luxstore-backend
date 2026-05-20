@@ -38,7 +38,11 @@ const registerUser = async (req, res) => {
     const rounds = parseInt(process.env.BCRYPT_ROUNDS) || 10;
     const hashedPassword = await bcrypt.hash(password, rounds);
 
-    const newUser = await User.create({ name, email, password });
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
 
     // Return success — don't send back the password (even hashed)
     return res.status(201).json({
@@ -138,15 +142,16 @@ function makeToken(existingUser) {
 const getMe = async (req, res) => {
   try {
     const me = await User.findById(req.user._id).select("password");
-    if(!user) return res.status(404).json({error: "user not found"})
-    return res.status(200).json({ 
-  user:{  id:    me._id,
-        name:  me.name,
-        email: me.email,
-        role:  me.role,
+    if (!me) return res.status(404).json({ error: "User not found." });
+    return res.status(200).json({
+      user: {
+        id:        me._id,
+        name:      me.name,
+        email:     me.email,
+        role:      me.role,
         createdAt: me.createdAt,
-  }
-});
+      },
+    });
   } catch (error) {
     return res.status(500).json({ error: "Could not get user." });
   }
@@ -166,7 +171,7 @@ const getAllUsers = async (req, res) => {
 // PUT /api/auth/users/:id/role — superadmin only
 const changeUserRole = async (req, res) => {
   try {
-    const { role } = req.body;
+    const role = req.body.role && String(req.body.role).toLowerCase().trim();
 
     const allowed = ["user", "admin"];
     if (!role || !allowed.includes(role)) {
