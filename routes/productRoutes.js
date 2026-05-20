@@ -2,7 +2,7 @@ const express = require("express");
 const { createProduct, getAllProducts, getProduct, updateProduct, deleteProduct } = require("../controllers/productController");
 const { protect } = require("../middleware/auth");
 const { authorizeRoles } = require("../middleware/role");
-
+const upload             = require("../middleware/upload");
 const router = express.Router();
 
 router.post("/",  protect, authorizeRoles("admin", "superadmin"), upload.single("image"),  createProduct);
