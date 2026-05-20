@@ -64,4 +64,4 @@ userSchema.methods.checkPassword = async function (typedPassword) {
   // returns true if they match, false if they don't
 };
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model("User", userSchema);

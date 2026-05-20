@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/",  protect, authorizeRoles("admin", "superadmin"), upload.single("image"),  createProduct);
 router.get("/",  getAllProducts);
-router.get("/search", protect, getProduct);
+router.get("/search", getProduct);
 router.put("/:id", protect, authorizeRoles("admin", "superadmin"), upload.single("image"),  updateProduct);
 router.delete("/:id",  protect,  authorizeRoles("admin", "superadmin"), deleteProduct);
 
