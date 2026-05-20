@@ -63,10 +63,12 @@ const registerUser = async (req, res) => {
 
 
 const loginUser = async (req, res) => {
+  console.log('loginUser body:', req.body);
 
-  const {email, password } = req.body;
+  const { email, password } = req.body;
 
   if (!email || !password) {
+    console.log('loginUser missing credentials');
     return res.status(400).json({ error: "Email and password are required." });
   }
 
@@ -74,6 +76,7 @@ const loginUser = async (req, res) => {
     // Find the user by email
     // We need the password field for comparison — it's excluded by default
     const existingUser = await User.findOne({ email: email.toLowerCase() });
+    console.log('loginUser found user:', !!existingUser, email.toLowerCase());
 
     if (!existingUser) {
       // Don't say "email not found" — that would tell attackers which emails exist
@@ -111,8 +114,8 @@ function makeToken(existingUser) {
     });
 
   } catch (error) {
-    console.error("Login error:", error.message);
-    res.status(500).json({ error: "Something went wrong. Please try again." });
+    console.error("Login error:", error);
+    res.status(500).json({ error: error.message || "Something went wrong. Please try again." });
   }
 };
 
