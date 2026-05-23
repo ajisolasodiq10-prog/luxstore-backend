@@ -1,59 +1,71 @@
-// ============================================================
-// middleware/upload.js — Multer + Cloudinary Configuration
-// Handles image uploads and stores them on Cloudinary
-// Returns a URL that gets saved in the Product model
-// ============================================================
+const multer = require('multer');
+const streamifier = require('streamifier');
+const cloudinary = require('cloudinary').v2;
+const dotenv   = require("dotenv");
 
-const cloudinary = require("cloudinary").v2;
-const  CloudinaryStorage  = require("multer-storage-cloudinary");
-const multer = require("multer");
+dotenv.config();
 
-// ── Configure Cloudinary ──────────────────────────────────────
-// Reads credentials from .env — never hardcode these
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ── Configure Storage ─────────────────────────────────────────
-// CloudinaryStorage tells multer to upload directly to Cloudinary
-// instead of saving to local disk
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder:         "luxstore/products", // folder name in your Cloudinary dashboard
-    allowed_formats: ["jpg", "jpeg", "png", "webp"],
-    transformation: [
-      {
-        width:   800,
-        height:  800,
-        crop:    "limit",  // never upscale, only downscale if larger than 800x800
-        quality: "auto",   // cloudinary auto-optimizes quality
-      },
-    ],
-  },
-});
+const storage = multer.memoryStorage();
+const multerUpload = multer({ storage });
+const upload = multerUpload.single('image');
 
-// ── File Filter ───────────────────────────────────────────────
-// Reject anything that is not an image before it hits Cloudinary
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const uploadToCloudinary = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
 
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);  // accept the file
-  } else {
-    cb(new Error("Only JPG, PNG, and WEBP images are allowed."), false);
+    // If Cloudinary isn't configured, fall back to saving locally for testing.
+    if (
+      !process.env.CLOUDINARY_CLOUD_NAME ||
+      !process.env.CLOUDINARY_API_KEY ||
+      !process.env.CLOUDINARY_API_SECRET
+    ) {
+      const fs = require('fs');
+      const path = require('path');
+      const uploadsDir = path.join(__dirname, '..', 'uploads');
+      if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+      const timestamp = Date.now();
+      const ext = req.file.originalname.split('.').pop();
+      const filename = `upload_${timestamp}.${ext}`;
+      const filePath = path.join(uploadsDir, filename);
+
+      fs.writeFileSync(filePath, req.file.buffer);
+
+      // Expose a local URL path (static serving must be configured by the app if needed)
+      req.imageData = { url: `/uploads/${filename}` };
+      // also set file.path to mimic a path-based upload
+      req.file.path = filePath;
+      return next();
+    }
+
+    const bufferStream = streamifier.createReadStream(req.file.buffer);
+
+    const uploadFromStream = () =>
+      new Promise((resolve, reject) => {
+        const writeStream = cloudinary.uploader.upload_stream((error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        });
+        bufferStream.pipe(writeStream);
+      });
+
+    const result = await uploadFromStream();
+    req.imageData = {
+      url: result.secure_url,
+    };
+    next();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Upload failed', details: err.message });
   }
 };
 
-// ── Multer Instance ───────────────────────────────────────────
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max file size
-  },
-});
-
-module.exports = upload;
+module.exports = { upload, uploadToCloudinary };

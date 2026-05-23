@@ -1,11 +1,12 @@
 // ============================================================
 // controllers/productController.js — Product CRUD
 // Image is now uploaded via multer + cloudinary
-// req.file.path contains the Cloudinary URL after upload
+// req.imageData contains the Cloudinary URL and public_id after upload
 // ============================================================
 
 const Product = require("../models/product");
 const User    = require("../models/user");
+const { upload, uploadToCloudinary } = require('../middleware/upload');
 const cloudinary = require("cloudinary").v2;
 
 // ── @route  POST /api/products ────────────────────────────────
@@ -19,8 +20,8 @@ const createProduct = async (req, res) => {
     if (!name || !description || !price || !category) {
       // If validation fails but a file was uploaded, delete it from Cloudinary
       // so we don't leave orphaned images
-      if (req.file && req.file.filename) {
-        await cloudinary.uploader.destroy(req.file.filename);
+      if (req.imageData && req.imageData.public_id) {
+        await cloudinary.uploader.destroy(req.imageData);
       }
       return res.status(400).json({
         error: "Name, description, price, and category are required.",
@@ -35,10 +36,10 @@ const createProduct = async (req, res) => {
     }
 
     // ── Image URL ─────────────────────────────────────────────
-    // If admin uploaded a file → use the Cloudinary URL (req.file.path)
+    // If admin uploaded a file → use the Cloudinary URL (req.imageData.url)
     // If no file uploaded → use placeholder
-    const imageUrl = req.file
-      ? req.file.path
+    const imageUrl = req.imageData
+      ? req.imageData.url
       : "https://placehold.co/400x400?text=No+Image";
 
     // ── Create product ────────────────────────────────────────

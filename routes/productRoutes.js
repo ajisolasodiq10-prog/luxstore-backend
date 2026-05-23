@@ -2,13 +2,14 @@ const express = require("express");
 const { createProduct, getAllProducts, getProduct, updateProduct, deleteProduct } = require("../controllers/productController");
 const { protect } = require("../middleware/auth");
 const { authorizeRoles } = require("../middleware/role");
-const upload             = require("../middleware/upload");
+const { upload, uploadToCloudinary } = require("../middleware/upload");
 const router = express.Router();
 
-router.post("/",  protect, authorizeRoles("admin", "superadmin"), upload.single("image"),  createProduct);
+router.post("/",  protect, authorizeRoles("admin", "superadmin"), upload, uploadToCloudinary, createProduct);
+// router.post("/",   upload, uploadToCloudinary, createProduct);
 router.get("/",  getAllProducts);
 router.get("/search", getProduct);
-router.put("/:id", protect, authorizeRoles("admin", "superadmin"), upload.single("image"),  updateProduct);
+router.put("/:id", protect, authorizeRoles("admin", "superadmin"), upload, uploadToCloudinary, updateProduct);
 router.delete("/:id",  protect,  authorizeRoles("admin", "superadmin"), deleteProduct);
 
 // ── Multer error handler ──────────────────────────────────────
